@@ -1,24 +1,52 @@
+from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
-from langchain_huggingface import HuggingFaceEndpoint
-from langchain_core.prompts import PromptTemplate
-from langchain.chains import SimpleSequentialChain, LLMChain
+from fastapi import FastAPI
+from typing import Union
+import sqlite3
+
+app = FastAPI()
+
 
 import os
 load_dotenv()
+# llm = ChatGoogleGenerativeAI(
+#     model="gemini-1.5-pro",
+#     temperature=0,
+#     google_api_key=os.getenv('google_api_key')
+# )
 
-llm = HuggingFaceEndpoint(
-    repo_id="HuggingFaceH4/zephyr-7b-beta",
-    huggingfacehub_api_token=os.getenv('huggingfacehub_api_token')
-)
+# response = llm.invoke("How are you?")
 
-prompt1 = PromptTemplate(
-    template="Translate the following text to Spanish: {text}", input_variables=["text"])
-prompt2 = PromptTemplate(
-    template="What is the sentiment of {text}", input_variables=["text"])
+# print(response)
 
-chain1 = LLMChain(llm=llm, prompt=prompt1)
-chain2 = LLMChain(llm=llm, prompt=prompt2)
-chain = SimpleSequentialChain(chains=[chain1, chain2])
-response = chain.invoke("How are you?")
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
 
-print(response)
+@app.get("/items/{item_id}")
+def read_item(item_id: int):
+    return {"item_id": item_id}
+
+@app.get("/students/{roll_no}")
+def get_student_details(roll_no: int):
+    # Connect to the database
+    conn = sqlite3.connect('students.db')
+    cursor = conn.cursor()
+
+    # Query to find the student with the given roll number
+    cursor.execute("SELECT * FROM students WHERE roll_no = ?", (roll_no,))
+    result = cursor.fetchone()
+
+    conn.close()
+
+    if result:
+        # Map the result to a dictionary to return
+        student = {
+            "roll_no": result[0],
+            "name": result[1],
+            "age": result[2],
+            # Add other fields as necessary
+        }
+        return student
+    else:
+        return {"error": "Student not found"}
