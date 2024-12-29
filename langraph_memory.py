@@ -36,7 +36,6 @@ app = FastAPI()
 
 @app.get("/chat/{t_id}/{query}")
 def get_content(t_id:str,query: str):
-    print(query)
     try:
         config = {"configurable": {"thread_id": t_id}}
         result = graph.invoke({"messages": [("user", query)]}, config)
