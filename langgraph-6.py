@@ -73,17 +73,17 @@ graph: CompiledStateGraph = builder.compile(checkpointer=memory)
 
 # messages = [HumanMessage(
 #     content="What is a addition of 2 and 3 and  3 multiply 4 and 4 multiply 5")]
-config1 = {"configurable": {"thread_id": "1"}}
 # responses = graph.invoke({"messages": messages}, config1)
 
 # for response in responses["messages"]:
 #     response.pretty_print()
 
 
-@app.get("/{chat}")
-def read_root(chat: str):
+@app.get("/{chat}/{t_id}")
+def read_root(chat: str, t_id: str):
     messages = [HumanMessage(
         content=chat)]
+    config1 = {"configurable": {"thread_id": t_id}}
     responses = graph.invoke({"messages": messages}, config1)
     for response in responses["messages"]:
         response.pretty_print()
